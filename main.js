@@ -42,8 +42,11 @@
             }
         },
         play: function(){
-            this.clean(); //Cada llamado a controller, limpia la pantalla
-            this.draw(); //Cada llamado a controller, dibuja en pantalla
+            if (this.board.playing){
+                this.clean(); //Cada llamado a controller, limpia la pantalla
+                this.draw(); //Cada llamado a controller, dibuja en pantalla
+                this.board.ball.move(); //Inicia el movimiento de la pelota.
+            }
         }
     }
     function draw(ctx, element){
@@ -70,8 +73,16 @@
         this.speed_y = 0;
         this.speed_x = 3;
         this.kind = "circle";
+        this.direction = 1;
 
         board.ball = this;
+    }
+
+    self.Ball.prototype = {
+        move: function(){
+            this.x += (this.speed_x * this.direction);
+            this.y += (this.speed_y);
+        }
     }
 })();
 
@@ -112,7 +123,6 @@ var ball = new Ball(400, 200, 10, board);
 
 //Listener que captura las teclas presionadas.
 document.addEventListener("keydown", function(ev){
-    ev.preventDefault();
     switch(ev.keyCode){
         case 32: //Cada que se presione espacio, el juego se pausará o se reanudará
             ev.preventDefault();
@@ -136,6 +146,8 @@ document.addEventListener("keydown", function(ev){
             break;
     }
 });
+
+board_view.draw(); //Para que no inicie en blanco la pantalla
 
 //Para que se refresque la pantalla a la velocidad de cada dispositivo
 window.requestAnimationFrame(controller);
