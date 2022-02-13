@@ -41,14 +41,50 @@
                 draw(this.ctx, el);
             }
         },
+        check_collisions: function(){
+            for (var i = this.board.bars.length - 1; i >= 0; i--){
+                var bar = this.board.bars[i];
+                if (hit(bar, this.board.ball)){
+                    this.board.ball.collision(bar);
+                }
+            }
+        },
         play: function(){
             if (this.board.playing){
                 this.clean(); //Cada llamado a controller, limpia la pantalla
                 this.draw(); //Cada llamado a controller, dibuja en pantalla
+                this.check_collisions();
                 this.board.ball.move(); //Inicia el movimiento de la pelota.
             }
         }
     }
+
+    function hit(bar, ball){
+        var hit = false;
+        //Colisiones horizontales
+        if (ball.x + ball.width >= bar.x && ball.x < bar.x + bar.width){
+            //Colisiones verticales
+            if (ball.y + ball.height >= bar.y && ball.y < bar.y + bar.height){
+                hit = true;
+            }
+        }
+         //Colision bar con ball
+        if (ball.x <= bar.x && ball.x + ball.width >= bar.x + bar.width){
+            if (ball.y <= bar.y && ball.y + ball.height >= bar.y + bar.height){
+                hit = true;
+            }
+        }
+
+        //Colision ball con bar
+        if (bar.x <= ball.x && bar.x + bar.width >= ball.x + ball.width){
+            if (bar.y <= ball.y && bar.y + bar.height >= ball.y + ball.height){
+                hit = true;
+            }
+        }
+
+        return hit;
+    }
+
     function draw(ctx, element){
         switch(element.kind){ //Según el tipo de elemento que llegue, dibujará uno u otro.
             case "rectangle":
@@ -64,16 +100,20 @@
     }
 })();
 
+//Declaración de la clase Ball
 (function(){
     self.Ball = function(x, y, radius, board){
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.board = board;
+        this.speed = 8;
         this.speed_y = 0;
-        this.speed_x = 3;
+        this.speed_x = 8;
         this.kind = "circle";
         this.direction = 1;
+        this.bounce_angle = 0;
+        this.max_bounce_angle = Math.PI / 12;
 
         board.ball = this;
     }
@@ -82,6 +122,27 @@
         move: function(){
             this.x += (this.speed_x * this.direction);
             this.y += (this.speed_y);
+        },
+        collision: function(bar){
+            var relative_intersect_y = (bar.y + (bar.height / 2)) - this.y;
+            var normalized_intersect_y = relative_intersect_y / (bar.height / 2);
+
+            this.bounce_angle = normalized_intersect_y * this.max_bounce_angle;
+
+            this.speed_y = this.speed * (-1*(Math.sin(this.bounce_angle)));
+            this.speed_x = this.speed * Math.cos(this.bounce_angle);
+
+            if (this.x > (this.board.width / 2)){
+                this.direction = -1;
+            } else{
+                this.direction = 1;
+            }
+        },
+        get width(){
+            return this.radius * 2;
+        },
+        get height(){
+            return this.radius * 2;
         }
     }
 })();
@@ -96,7 +157,7 @@
         this.board = board;
         this.board.bars.push(this);
         this.kind = "rectangle";
-        this.speed = 10; //Velocidad de movimiento de las barras
+        this.speed = 15; //Velocidad de movimiento de las barras
     }
     //Para agregarle movimiento más adelante.
     self.Bar.prototype = {
