@@ -107,9 +107,9 @@
         this.y = y;
         this.radius = radius;
         this.board = board;
-        this.speed = 8;
+        this.speed = 5;
         this.speed_y = 0;
-        this.speed_x = 8;
+        this.speed_x = 5;
         this.kind = "circle";
         this.direction = 1;
         this.bounce_angle = 0;
